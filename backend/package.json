@@ -1,0 +1,49 @@
+{
+  "name": "env2",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest src",
+    "tsc": "tsc --noImplicitAny",
+    "lint": "eslint src/**.ts",
+    "lint-fix": "eslint --fix src/**.ts",
+    "ts-node": "ts-node",
+    "jest": "jest",
+    "nodemon": "nodemon src/server.ts",
+    "ts-node-coverage": "nyc --reporter=text --reporter=lcov ts-node"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.13",
+    "@types/http-errors": "^1.8.2",
+    "@types/jest": "^27.5.2",
+    "@types/jsonwebtoken": "^9.0.6",
+    "@types/node": "^17.0.27",
+    "@types/pg": "^8.11.4",
+    "@types/prompt-sync": "^4.1.1",
+    "@typescript-eslint/eslint-plugin": "^5.21.0",
+    "@typescript-eslint/parser": "^5.21.0",
+    "dotenv": "^16.4.5",
+    "eslint": "^8.14.0",
+    "eslint-plugin-jest": "^26.1.5",
+    "jest": "^28.1.0",
+    "middleware-http-errors": "^0.1.0",
+    "nodemon": "^2.0.22",
+    "nyc": "^15.1.0",
+    "ts-jest": "^28.0.2",
+    "typescript": "^4.6.3"
+  },
+  "dependencies": {
+    "body-parser": "^1.20.2",
+    "cors": "^2.8.5",
+    "express": "^4.19.1",
+    "http-errors": "^2.0.0",
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.11.3",
+    "sync-request": "^6.1.0",
+    "ts-node": "^10.7.0"
+  }
+}

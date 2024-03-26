@@ -1,0 +1,91 @@
+GET http://localhost:3000/posts
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdXRoX3VzZXJfaWQiOjEsIm5hbWVfZmlyc3QiOiJKb3JkYW4iLCJuYW1lX2xhc3QiOiJUYW0iLCJlbWFpbCI6ImpvcmRhbkB0ZXN0LmNvbSIsInBhc3N3b3JkIjoiOGQ5NjllZWY2ZWNhZDNjMjlhM2E2MjkyODBlNjg2Y2YwYzNmNWQ1YTg2YWZmM2NhMTIwMjBjOTIzYWRjNmM5MiIsImNyZWF0ZWF0IjoiMTcxMTQwMDM3NDI5NSIsImlhdCI6MTcxMTQwMTUzMCwiZXhwIjoxNzExNDg3OTMwfQ.3Y9eiTLWc6gqDeoXnBbJt0bZ3DukXHbL4DZSbPMVwck
+
+####
+
+POST http://localhost:3000/auth/register
+Content-Type: application/json
+
+{
+    "password": "password",
+    "email": "jordan@test.com",
+    "name_first": "Jordan",
+    "name_last": "Tam"
+}
+
+####
+
+POST http://localhost:3000/auth/register
+Content-Type: application/json
+
+{
+    "password": "password",
+    "email": "elain@test.com",
+    "name_first": "Elain",
+    "name_last": "Lau"
+}
+
+####
+
+POST http://localhost:3000/auth/login
+Content-Type: application/json
+
+{
+    "email": "jordan@test.com",
+    "password": "123456"
+}
+
+#####
+
+GET http://localhost:3000/users/all
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdXRoX3VzZXJfaWQiOjEsIm5hbWVfZmlyc3QiOiJKb3JkYW4iLCJuYW1lX2xhc3QiOiJUYW0iLCJlbWFpbCI6ImpvcmRhbkB0ZXN0LmNvbSIsInBhc3N3b3JkIjoiOGQ5NjllZWY2ZWNhZDNjMjlhM2E2MjkyODBlNjg2Y2YwYzNmNWQ1YTg2YWZmM2NhMTIwMjBjOTIzYWRjNmM5MiIsImNyZWF0ZWF0IjoiMTcxMTQwMDM3NDI5NSIsImlhdCI6MTcxMTQwMTUzMCwiZXhwIjoxNzExNDg3OTMwfQ.3Y9eiTLWc6gqDeoXnBbJt0bZ3DukXHbL4DZSbPMVwck
+
+####
+GET http://localhost:3000/user/profile?u_id=1
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdXRoX3VzZXJfaWQiOjEsIm5hbWVfZmlyc3QiOiJKb3JkYW4iLCJuYW1lX2xhc3QiOiJUYW0iLCJlbWFpbCI6ImpvcmRhbkB0ZXN0LmNvbSIsInBhc3N3b3JkIjoiOGQ5NjllZWY2ZWNhZDNjMjlhM2E2MjkyODBlNjg2Y2YwYzNmNWQ1YTg2YWZmM2NhMTIwMjBjOTIzYWRjNmM5MiIsImNyZWF0ZWF0IjoiMTcxMTQwMDM3NDI5NSIsImlhdCI6MTcxMTQwMTUzMCwiZXhwIjoxNzExNDg3OTMwfQ.3Y9eiTLWc6gqDeoXnBbJt0bZ3DukXHbL4DZSbPMVwck
+
+
+####
+PUT http://localhost:3000/user/profile/setname
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdXRoX3VzZXJfaWQiOjEsIm5hbWVfZmlyc3QiOiJKb3JkYW4iLCJuYW1lX2xhc3QiOiJUYW0iLCJlbWFpbCI6ImpvcmRhbkB0ZXN0LmNvbSIsInBhc3N3b3JkIjoiOGQ5NjllZWY2ZWNhZDNjMjlhM2E2MjkyODBlNjg2Y2YwYzNmNWQ1YTg2YWZmM2NhMTIwMjBjOTIzYWRjNmM5MiIsImNyZWF0ZWF0IjoiMTcxMTQwMDM3NDI5NSIsImlhdCI6MTcxMTQwMTUzMCwiZXhwIjoxNzExNDg3OTMwfQ.3Y9eiTLWc6gqDeoXnBbJt0bZ3DukXHbL4DZSbPMVwck
+Content-Type: application/json
+
+{
+    "name_first": "Lewis",
+    "name_last": "Lee"
+}
+
+
+
+####
+PUT http://localhost:3000/user/profile/setname
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdXRoX3VzZXJfaWQiOjEsIm5hbWVfZmlyc3QiOiJKb3JkYW4iLCJuYW1lX2xhc3QiOiJUYW0iLCJlbWFpbCI6ImpvcmRhbkB0ZXN0LmNvbSIsInBhc3N3b3JkIjoiOGQ5NjllZWY2ZWNhZDNjMjlhM2E2MjkyODBlNjg2Y2YwYzNmNWQ1YTg2YWZmM2NhMTIwMjBjOTIzYWRjNmM5MiIsImNyZWF0ZWF0IjoiMTcxMTQwMDM3NDI5NSIsImlhdCI6MTcxMTQwMTUzMCwiZXhwIjoxNzExNDg3OTMwfQ.3Y9eiTLWc6gqDeoXnBbJt0bZ3DukXHbL4DZSbPMVwck
+Content-Type: application/json
+
+{
+    "name_first": "Jordan",
+    "name_last": "Tam"
+}
+
+####
+PUT http://localhost:3000/user/profile/setemail
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdXRoX3VzZXJfaWQiOjEsIm5hbWVfZmlyc3QiOiJKb3JkYW4iLCJuYW1lX2xhc3QiOiJUYW0iLCJlbWFpbCI6ImpvcmRhbkB0ZXN0LmNvbSIsInBhc3N3b3JkIjoiOGQ5NjllZWY2ZWNhZDNjMjlhM2E2MjkyODBlNjg2Y2YwYzNmNWQ1YTg2YWZmM2NhMTIwMjBjOTIzYWRjNmM5MiIsImNyZWF0ZWF0IjoiMTcxMTQwMDM3NDI5NSIsImlhdCI6MTcxMTQwMTUzMCwiZXhwIjoxNzExNDg3OTMwfQ.3Y9eiTLWc6gqDeoXnBbJt0bZ3DukXHbL4DZSbPMVwck
+Content-Type: application/json
+
+{
+    "email": "jordan@test.com"
+}
+
+####
+
+PUT http://localhost:3000/user/profile/sethandle
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdXRoX3VzZXJfaWQiOjEsIm5hbWVfZmlyc3QiOiJKb3JkYW4iLCJuYW1lX2xhc3QiOiJUYW0iLCJlbWFpbCI6ImpvcmRhbkB0ZXN0LmNvbSIsInBhc3N3b3JkIjoiOGQ5NjllZWY2ZWNhZDNjMjlhM2E2MjkyODBlNjg2Y2YwYzNmNWQ1YTg2YWZmM2NhMTIwMjBjOTIzYWRjNmM5MiIsImNyZWF0ZWF0IjoiMTcxMTQwMDM3NDI5NSIsImlhdCI6MTcxMTQwMTUzMCwiZXhwIjoxNzExNDg3OTMwfQ.3Y9eiTLWc6gqDeoXnBbJt0bZ3DukXHbL4DZSbPMVwck
+Content-Type: application/json
+
+{
+    "handle_str": "Nleisis"
+}
+
+####
+
+
