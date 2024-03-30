@@ -10,7 +10,16 @@ import {
     userProfile,
     userSetName,
     userSetEmail,
-    userSetHandle, 
+    userSetHandle,
+    channelCreate,
+    channelsList,
+    channelsListAll,
+    channelDetails,
+    channelJoin,
+    channelInvite,
+    channelLeave,
+    channelAddowner,
+    messageSend, 
 } 
     from "./service";
 
@@ -44,6 +53,61 @@ app.post(`/auth/login`, (req, res) => {
 
 app.post(`/auth/register`, (req, res) => {
     auth_register(req, res)
+})
+
+app.post(`/auth/logout`, authenticateToken, (req, res) => {
+    //
+    // TODO
+    //
+
+})
+
+app.post(`/channels/create`, authenticateToken, (req, res) => {
+    channelCreate(req, res)
+})
+
+app.get(`/channels/list`, authenticateToken, (req, res) => {
+    channelsList(req, res)
+})
+
+app.get(`/channels/listall`, authenticateToken, (req, res) => {
+    channelsListAll(req, res)
+})
+
+app.get(`/channel/details`, authenticateToken, (req, res) => {
+    channelDetails(req, res)
+})
+
+app.post(`/channel/join`, authenticateToken, (req, res) => {
+    channelJoin(req, res)
+})
+
+app.post(`/channel/invite`, authenticateToken, (req, res) => {
+    channelInvite(req, res)
+})
+
+app.get(`/channel/messages`, authenticateToken, (req, res) => {
+    //
+    // TODO
+    //
+})
+
+app.post(`/channel/leave`, authenticateToken, (req, res) => {
+    channelLeave(req, res)
+})
+
+app.post(`/channel/addowner`, authenticateToken, (req, res) => {
+    channelAddowner(req, res)
+})
+
+app.post(`/channel/removeowner`, authenticateToken, (req, res) => {
+    //
+    // TODO
+    //
+})
+
+app.post(`/message/send`, authenticateToken, (req, res) => {
+    messageSend(req, res)
 })
 
 app.get(`/users/all`, authenticateToken, (req, res) => {
