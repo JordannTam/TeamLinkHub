@@ -23,7 +23,8 @@ import {
     channelRemoveowner,
     messageEdit,
     channelMessages,
-    messageRemove, 
+    messageRemove,
+    adminUserRemove, 
 } 
     from "./service";
 
@@ -136,6 +137,10 @@ app.put(`/user/profile/setemail`, authenticateToken, (req, res) => {
 
 app.put(`/user/profile/sethandle`, authenticateToken, (req, res) => {
     userSetHandle(req, res)
+})
+
+app.delete(`/admin/user/remove`, authenticateToken, (req, res) => {
+    adminUserRemove(req, res)
 })
 
 

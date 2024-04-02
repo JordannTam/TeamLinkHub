@@ -475,8 +475,12 @@ export const channelJoin = async (req: any, res: any) => {
             res.status(ACCESS_ERROR)
             throw new Error(`channel_id refers to a channel that is private`)
         }
+        const q1 = "SELECT permission_id FROM users WHERE auth_user_id = $1;"
+        const v1 = [ auth_user_id ]
+        const qRes1 = await pool.query(q1, v1)
+        let is_owner = qRes1.rows[0].permission_id === 1 ? true : false
         const query = "INSERT INTO channel_user (channel_id, auth_user_id, is_owner) VALUES ($1, $2, $3);"
-        const values = [ channel_id, auth_user_id, false]
+        const values = [ channel_id, auth_user_id, is_owner]
         await pool.query(query, values)
         res.json({})
     } catch(err) {
@@ -970,3 +974,32 @@ export const userSetHandle = async (req: any, res: any) => {
     }
 }
 
+/*
+    Parameters: { token, u_id }
+    Return Type:{}
+    InputError when any of: 
+        u_id does not refer to a valid user
+        u_id refers to a user who is the only global owner
+    AccessError when:
+        the authorised user is not a global owner
+*/
+
+export const adminUserRemove = async (req:any, res:any) => {
+    try{
+        const auth_user_id = res.locals.user.auth_user_id
+        const target_u_id = req.query.u_id
+        //  u_id does not refer to a valid user
+        await checkUserId(res, target_u_id)
+        // u_id refers to a user who is the only global owner
+        const q_input_error_2 = "SELECT * FROM channel_user WHERE is_owner = true;"
+        const res_input_error_2 = await pool.query(q_input_error_2)
+        if (res_input_error_2.rowCount === 1) {
+            throw new Error(`u_id refers to a user who is the only global owner`)
+        }
+
+    } catch (err) {
+        res.status(INVALID_PARAMETER)
+        return res.send(`Error: ${err}`)
+    }
+
+}

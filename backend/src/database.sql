@@ -7,7 +7,7 @@ CREATE TABLE users (
     CREATEAT VARCHAR(255),
     img BYTEA,
     username VARCHAR(255),
-    permission_id INT DEFAULT 1
+    permission_id INT DEFAULT 2
 );
 
 CREATE TABLE channels (
@@ -31,9 +31,10 @@ CREATE TABLE messages (
     auth_user_id INTEGER NOT NULL,
     message VARCHAR(255) NOT NULL,
     react INTEGER NOT NULL,
+    pin INTEGER NOT NULL DEFAULT 2,
     time_sent TIMESTAMP NOT NULL,
     FOREIGN KEY (channel_id) REFERENCES channels(channel_id) ON DELETE CASCADE,
-    FOREIGN KEY (auth_user_id) REFERENCES users(auth_user_id) ON DELETE CASCADE
+    FOREIGN KEY (auth_user_id) REFERENCES users(auth_user_id)
 );
 /*
 channelsId num

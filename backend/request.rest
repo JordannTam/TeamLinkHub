@@ -31,7 +31,7 @@ POST http://localhost:3000/auth/login
 Content-Type: application/json
 
 {
-    "email": "jordan@test.com",
+    "email": "elain@test.com",
     "password": "password"
 }
 
@@ -178,6 +178,16 @@ Content-Type: application/json
 {
     "channel_id": 4,
     "message": "Hello 3"
+}
+
+####
+POST http://localhost:3000/message/send
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdXRoX3VzZXJfaWQiOjIsIm5hbWVfZmlyc3QiOiJFbGFpbiIsIm5hbWVfbGFzdCI6IkxhdSIsImVtYWlsIjoiZWxhaW5AdGVzdC5jb20iLCJwYXNzd29yZCI6IjVlODg0ODk4ZGEyODA0NzE1MWQwZTU2ZjhkYzYyOTI3NzM2MDNkMGQ2YWFiYmRkNjJhMTFlZjcyMWQxNTQyZDgiLCJjcmVhdGVhdCI6IjE3MTE0ODI5MjY0MjEiLCJpbWciOm51bGwsInVzZXJuYW1lIjpudWxsLCJwZXJtaXNzaW9uX2lkIjoxLCJpYXQiOjE3MTIwMzE3MDgsImV4cCI6MTcxMjExODEwOH0.WGkKkzGZrwN8pUnn_DaK-Ati0MGciC69AbBOOj2uRjY
+Content-Type: application/json
+
+{
+    "channel_id": 4,
+    "message": "FROM ELAIN"
 }
 
 
