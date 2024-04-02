@@ -19,7 +19,11 @@ import {
     channelInvite,
     channelLeave,
     channelAddowner,
-    messageSend, 
+    messageSend,
+    channelRemoveowner,
+    messageEdit,
+    channelMessages,
+    messageRemove, 
 } 
     from "./service";
 
@@ -87,9 +91,7 @@ app.post(`/channel/invite`, authenticateToken, (req, res) => {
 })
 
 app.get(`/channel/messages`, authenticateToken, (req, res) => {
-    //
-    // TODO
-    //
+    channelMessages(req, res)
 })
 
 app.post(`/channel/leave`, authenticateToken, (req, res) => {
@@ -101,13 +103,19 @@ app.post(`/channel/addowner`, authenticateToken, (req, res) => {
 })
 
 app.post(`/channel/removeowner`, authenticateToken, (req, res) => {
-    //
-    // TODO
-    //
+    channelRemoveowner(req, res)
 })
 
 app.post(`/message/send`, authenticateToken, (req, res) => {
     messageSend(req, res)
+})
+
+app.put(`/message/edit`, authenticateToken, (req, res) => {
+    messageEdit(req, res)
+})
+
+app.delete(`/message/remove`, authenticateToken, (req, res) => {
+    messageRemove(req, res)
 })
 
 app.get(`/users/all`, authenticateToken, (req, res) => {

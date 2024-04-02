@@ -28,10 +28,12 @@ CREATE TABLE channel_user (
 CREATE TABLE messages (
     message_id SERIAL PRIMARY KEY,
     channel_id INTEGER NOT NULL,
+    auth_user_id INTEGER NOT NULL,
     message VARCHAR(255) NOT NULL,
     react INTEGER NOT NULL,
     time_sent TIMESTAMP NOT NULL,
-    FOREIGN KEY (channel_id) REFERENCES channels(channel_id) ON DELETE CASCADE
+    FOREIGN KEY (channel_id) REFERENCES channels(channel_id) ON DELETE CASCADE,
+    FOREIGN KEY (auth_user_id) REFERENCES users(auth_user_id) ON DELETE CASCADE
 );
 /*
 channelsId num

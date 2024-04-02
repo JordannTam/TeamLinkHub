@@ -151,7 +151,7 @@ const checkChannelId = async (res:any, channel_id: number) => {
     InputError:
         u_id refers to a user who is already an owner of the channel
 */
-const checkNotChannelUser = async (res: any, auth_user_id: number, channel_id: number) => {
+const testHasChannelUser = async (res: any, auth_user_id: number, channel_id: number) => {
     const q_input_error_2 = "SELECT * FROM channel_user WHERE channel_id = $1 and auth_user_id = $2;"
     const v_input_error_2 = [ channel_id, auth_user_id ]
     const res_input_error_2 = await pool.query(q_input_error_2, v_input_error_2)
@@ -161,7 +161,7 @@ const checkNotChannelUser = async (res: any, auth_user_id: number, channel_id: n
     }
 }
 
-const checkHasChannelUser = async (res: any, auth_user_id: number, channel_id: number) => {
+const testNotChannelUser = async (res: any, auth_user_id: number, channel_id: number) => {
     const q_input_error_2 = "SELECT * FROM channel_user WHERE channel_id = $1 and auth_user_id = $2;"
     const v_input_error_2 = [ channel_id, auth_user_id ]
     const res_input_error_2 = await pool.query(q_input_error_2, v_input_error_2)
@@ -171,6 +171,82 @@ const checkHasChannelUser = async (res: any, auth_user_id: number, channel_id: n
     }
 }
 
+const padTwoDigits = (num: number) => {
+    return num.toString().padStart(2, "0");
+  }
+  
+const dateInYyyyMmDdHhMmSs = (date: Date, dateDiveder: string = "-") => {
+    // :::: Exmple Usage ::::
+    // The function takes a Date object as a parameter and formats the date as YYYY-MM-DD hh:mm:ss.
+    // 👇️ 2023-04-11 16:21:23 (yyyy-mm-dd hh:mm:ss)
+    //console.log(dateInYyyyMmDdHhMmSs(new Date()));
+  
+    //  👇️️ 2025-05-04 05:24:07 (yyyy-mm-dd hh:mm:ss)
+    // console.log(dateInYyyyMmDdHhMmSs(new Date('May 04, 2025 05:24:07')));
+    // Date divider
+    // 👇️ 01/04/2023 10:20:07 (MM/DD/YYYY hh:mm:ss)
+    // console.log(dateInYyyyMmDdHhMmSs(new Date(), "/"));
+    return (
+      [
+        date.getFullYear(),
+        padTwoDigits(date.getMonth() + 1),
+        padTwoDigits(date.getDate()),
+      ].join(dateDiveder) +
+      " " +
+      [
+        padTwoDigits(date.getHours()),
+        padTwoDigits(date.getMinutes()),
+        padTwoDigits(date.getSeconds()),
+      ].join(":")
+    );
+  }
+  
+
+/*
+    message_id does not refer to a valid message within a channel/DM that the authorised user has joined
+*/
+
+const testChannelDmMsgId = async (res: any, message_id: number, auth_user_id: number) => {
+    const query = "SELECT * FROM messages m JOIN channel_user cu ON m.channel_id = cu.channel_id WHERE cu.auth_user_id = $1 and m.message_id = $2;"
+    const values = [ auth_user_id, message_id ]
+    const qRes = await pool.query(query, values)
+    if (qRes.rowCount === 0) {
+        res.status(INVALID_PARAMETER)
+        throw new Error(`message_id does not refer to a valid message within a channel/DM that the authorised user has joined`)
+    }
+}
+
+/*
+    the message was sent by the authorised user making this request
+*/
+const testMessageFromUser = async (res: any, auth_user_id:number, message_id: number) => {
+    const q1 = "SELECT auth_user_id, channel_id FROM messages WHERE message_id = $1;"
+    const v1 = [ message_id ]
+    const res1 = await pool.query(q1, v1)
+    const sender_id = res1.rows[0].auth_user_id
+    // the message was sent by the authorised user making this request
+    if (sender_id !== auth_user_id) {
+        res.status(INVALID_PARAMETER)
+        throw new Error(`the message was not sent by the authorised user making this request`)
+    }
+}
+
+/*
+    the authorised user has owner permissions in the channel/DM
+*/
+const testUserIsOwner = async (res:any, auth_user_id:number, message_id: number) => {
+    const q1 = "SELECT auth_user_id, channel_id FROM messages WHERE message_id = $1;"
+    const v1 = [ message_id ]
+    const res1 = await pool.query(q1, v1)
+    const channel_id = res1.rows[0].channel_id
+    const q2 = "SELECT is_owner FROM channel_user WHERE auth_user_id = $1 and channel_id = $2;"
+    const v2 = [ auth_user_id, channel_id ]
+    const is_owner = (await pool.query(q2, v2)).rows[0].is_owner
+    if (!is_owner) {
+        res.status(INVALID_PARAMETER)
+        throw new Error(`the authorised user has owner permissions in the channel/DM`)
+    }
+}
 
 /*****************
  * Auth Function *
@@ -362,7 +438,7 @@ export const channelDetails = async (req: any, res: any) => {
     try {
         const channel_id = req.query.channel_id
         const auth_user_id = res.locals.user.auth_user_id
-        await checkNotChannelUser(res, channel_id, auth_user_id)
+        await testHasChannelUser(res, channel_id, auth_user_id)
         const query = "SELECT c.name, c.is_public, json_agg(json_build_object('user_id', cu.auth_user_id, 'is_owner', cu.is_owner, 'username', u.username, 'name_first', name_first, 'name_last', name_last, 'email', email, 'permission_id', permission_id, 'img', img )) AS members FROM channels c JOIN channel_user cu ON c.channel_id = cu.channel_id JOIN users u ON cu.auth_user_id = u.auth_user_id WHERE c.channel_id = $1 GROUP BY c.channel_id"
         const values = [ channel_id ]
         const qRes = await pool.query(query, values)
@@ -391,7 +467,7 @@ export const channelJoin = async (req: any, res: any) => {
         const channel_id = req.body.channel_id
         await checkChannelId(res, channel_id)
         const auth_user_id = res.locals.user.auth_user_id
-        await checkNotChannelUser(res, auth_user_id, channel_id)
+        await testHasChannelUser(res, auth_user_id, channel_id)
         const q_access_error_1_1 = "SELECT is_public FROM channels WHERE channel_id = $1;"
         const v_access_error_1_1 = [ channel_id ]
         const res_access_error_1_1 = await pool.query(q_access_error_1_1, v_access_error_1_1)
@@ -432,17 +508,10 @@ export const channelInvite = async (req: any, res: any) => {
         await checkChannelId(res, channel_id)
         // u_id does not refer to a valid user
         await checkUserId(res, target_u_id)
-
         // u_id refers to a user who is already a member of the channel
-        await checkNotChannelUser(res, channel_id, target_u_id)
+        await testHasChannelUser(res, target_u_id, channel_id)
         // channel_id is valid and the authorised user is not a member of the channel
-        const q_access_error_3 = "SELECT * FROM channel_user WHERE channel_id = $1 and auth_user_id = $2;"
-        const v_access_error_3 = [ channel_id, user.auth_user_id ]
-        const res_access_error_3 = await pool.query(q_access_error_3, v_access_error_3)
-        if (res_access_error_3.rowCount === 0) {
-            res.status(ACCESS_ERROR)
-            throw new Error (`channel_id is valid and the authorised user is not a member of the channel`)
-        }
+        await testNotChannelUser(res, user.auth_user_id, channel_id)
 
         const query = "INSERT INTO channel_user (channel_id, auth_user_id, is_owner) VALUES ($1, $2, $3);"
         const values = [ channel_id, target_u_id, false ]
@@ -509,7 +578,7 @@ export const channelAddowner = async (req: any, res: any) => {
         const target_u_id = req.body.u_id
         await checkChannelId(res, channel_id)
         await checkUserId(res, target_u_id)
-        await checkHasChannelUser(res, target_u_id, channel_id)
+        await testNotChannelUser(res, target_u_id, channel_id)
         const q_input_error_owner = "SELECT * FROM channel_user WHERE channel_id = $1 and auth_user_id = $2;"
         const v_input_error_owner = [ channel_id, target_u_id]
         const res_input_error_owner = await pool.query(q_input_error_owner, v_input_error_owner)
@@ -557,7 +626,7 @@ export const channelRemoveowner = async (req: any, res: any) => {
         const target_u_id = req.body.u_id
         await checkChannelId(res, channel_id)
         await checkUserId(res, target_u_id)
-        await checkHasChannelUser(res, target_u_id, channel_id)
+        await testNotChannelUser(res, target_u_id, channel_id)
         const q_input_error_owner = "SELECT * FROM channel_user WHERE channel_id = $1;"
         const v_input_error_owner = [ channel_id ]
         const res_input_error_owner = await pool.query(q_input_error_owner, v_input_error_owner)
@@ -588,14 +657,161 @@ export const channelRemoveowner = async (req: any, res: any) => {
     }
 }
 
+/*
+    method: GET
+    Parameters: { token, channel_id, start }
+    Return Type: { messages, start, end }
+
+    InputError when any of:
+        channel_id does not refer to a valid channel
+        start is greater than the total number of messages in the channel
+    AccessError when:
+        channel_id is valid and the authorised user is not a member of the channel
+*/
+
+export const channelMessages = async (req: any, res: any) => {
+    try {
+        const start = parseInt(req.query.start)
+        const channel_id = parseInt(req.query.channel_id)
+        const auth_user_id = res.locals.user.auth_user_id
+        //channel_id does not refer to a valid channel
+        await checkChannelId(res, channel_id)
+
+        //start is greater than the total number of messages in the channel
+        const q_input_error_1 = "SELECT channel_id, COUNT(*) AS count FROM messages WHERE channel_id = $1 GROUP BY channel_id;"
+        const v_input_error_1 = [ channel_id ]
+        const res_input_error_1 = await pool.query(q_input_error_1, v_input_error_1)
+        if (res_input_error_1.rows[0].count < start) {
+            res.status(INVALID_PARAMETER)
+            throw new Error(`start is greater than the total number of messages in the channel`)
+        }
+        let end = res_input_error_1.rows[0].count < 50 ? -1 : start + 50
+
+        //channel_id is valid and the authorised user is not a member of the channel
+        await testNotChannelUser(res, auth_user_id, channel_id)
+        
+        // Return Messages
+        const query = "SELECT message AS message FROM messages WHERE channel_id = $1 ORDER BY time_sent DESC;"
+        const values = [ channel_id ]
+        const qRes = await pool.query(query, values)
+        const messages = qRes.rows.map((r) => r.message).splice(start)
+        res.json({ messages: messages, start: start, end: end})
+
+    } catch(err) {
+        return res.send(`Error: ${err}`)
+    }
+}
+
 
 /********************
  * Message Function *
  ********************/
 
+/* 
+    method: POST
+    Parameters: { token, channel_id, message }
+    Return Type: { message_id }
+    path: /message/send
+
+    InputError when:
+        channel_id does not refer to a valid channel
+        length of message is less than 1 or over 1000 characters
+    AccessError when:
+        channel_id is valid and the authorised user is not a member of the channel
+*/
+export const messageSend = async (req: any, res: any) => {
+    try {
+        const auth_user_id = res.locals.user.auth_user_id
+        const channel_id = req.body.channel_id
+        const message = req.body.message
+        // channel_id does not refer to a valid channel
+        await checkChannelId(res, channel_id)
+        // length of message is less than 1 or over 1000 characters
+        if (message < 1 || message > 1000) {
+            res.status(INVALID_PARAMETER)
+            throw new Error(`length of message is less than 1 or over 1000 characters`)
+        }
+        // channel_id is valid and the authorised user is not a member of the channel
+        await testNotChannelUser(res, auth_user_id, channel_id)
+        const dateNow = new Date(Date.now())
+        const query = "INSERT INTO messages (channel_id, auth_user_id, message, react, time_sent) values ($1, $2, $3, $4, $5) RETURNING message_id;"
+        const values = [ channel_id, auth_user_id, message, 0, dateInYyyyMmDdHhMmSs(dateNow) ]
+        const qRes = await pool.query(query, values)
+        res.json(qRes.rows[0])
+    } catch(err) {
+        return res.send(`Error: ${err}`)
+    }
+}
 
 
+/* 
+    method: PUT
+    Parameters: { token, message_id, message }
+    Return Type: {}
+    path: /message/edit
 
+    InputError when any of:
+        length of message is over 1000 characters
+        message_id does not refer to a valid message within a channel/DM that the authorised user has joined
+    AccessError when message_id refers to a valid message in a joined channel/DM and none of the following are true:
+        the message was sent by the authorised user making this request
+        the authorised user has owner permissions in the channel/DM
+*/
+export const messageEdit = async (req: any, res: any) => {
+    try {
+        const message_id = req.body.message_id
+        const message = req.body.message
+        const auth_user_id = res.locals.user.auth_user_id
+        console.log(message_id, auth_user_id);
+        
+        // length of message is less than 1 or over 1000 characters
+        if (message < 1 || message > 1000) {
+            res.status(INVALID_PARAMETER)
+            throw new Error(`length of message is less than 1 or over 1000 characters`)
+        }
+        // message_id does not refer to a valid message within a channel/DM that the authorised user has joined
+        await testChannelDmMsgId(res, message_id, auth_user_id)
+        // get the channel_id of the message
+        await testMessageFromUser(res, auth_user_id, message_id)
+        await testUserIsOwner(res, auth_user_id, message_id)
+
+        const query = "UPDATE messages SET message = $1;"
+        const values = [ message ]
+        await pool.query(query, values)
+        res.json({})
+    } catch(err) {
+        return res.send(`Error: ${err}`)
+    }
+}
+
+/*
+    method: DELETE
+    Parameters: { token, message_id }
+    Return Type: {}
+    path: message/remove
+
+    InputError when:
+        message_id does not refer to a valid message within a channel/DM that the authorised user has joined
+    AccessError when message_id refers to a valid message in a joined channel/DM and none of the following are true:
+        the message was sent by the authorised user making this request
+        the authorised user has owner permissions in the channel/DM
+*/
+export const messageRemove = async (req: any, res: any) => {
+    try {
+        const message_id = req.query.message_id
+        const auth_user_id = res.locals.user.auth_user_id
+        await testChannelDmMsgId(res, message_id, auth_user_id)
+        await testMessageFromUser(res, auth_user_id, message_id)
+        await testUserIsOwner(res, auth_user_id, message_id)
+        const query = "DELETE FROM messages WHERE message_id = $1;"
+        const values = [ message_id ]
+        await pool.query(query, values)
+        res.json({})
+
+    } catch(err) {
+        return res.send(`Error: ${err}`)
+    }
+}
 
 /*****************
  * User Function *
