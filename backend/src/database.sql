@@ -34,7 +34,7 @@ CREATE TABLE messages (
     pin INTEGER NOT NULL DEFAULT 2,
     time_sent TIMESTAMP NOT NULL,
     FOREIGN KEY (channel_id) REFERENCES channels(channel_id) ON DELETE CASCADE,
-    FOREIGN KEY (auth_user_id) REFERENCES users(auth_user_id)
+    FOREIGN KEY (auth_user_id) REFERENCES users(auth_user_id) ON UPDATE CASCADE
 );
 /*
 channelsId num
@@ -88,3 +88,4 @@ SELECT
 
 
 SELECT c.channel_id, c.name, c.is_public, json_agg( json_build_object( 'user_id', cu.auth_user_id,  'is_owner', cu.is_owner,  'username', u.username,  'name_first', name_first,  'name_last', name_last,  'email', email,  'permission_id', permission_id,  'img', img  ) ) AS members  FROM channels c  JOIN ( SELECT channel_id, is_owner, auth_user_id FROM channel_user WHERE auth_user_id = $1) cu ON c.channel_id = cu.channel_id JOIN users u ON cu.auth_user_id = u.auth_user_id GROUP BY c.channel_id;
+

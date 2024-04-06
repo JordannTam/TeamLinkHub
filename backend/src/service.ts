@@ -2,9 +2,9 @@ import jwt from 'jsonwebtoken'
 import crypto from 'crypto'
 import { Pool } from 'pg'
 
-const INVALID_PARAMETER = 422
-const ACCESS_ERROR = 403
-const INVALID_TOKEN = 401
+export const INVALID_PARAMETER = 422
+export const ACCESS_ERROR = 403
+export const INVALID_TOKEN = 401
 
 
 const pool = new Pool({
@@ -111,6 +111,25 @@ const validUsername = (username: string) => {
     // todo: handle_str contains characters that are not alphanumeric
 
     return username
+}
+
+const getPermissionId = async (auth_user_id: number) => {
+    const query = "SELECT permission_id FROM users WHERE auth_user_id = $1;"
+    const values = [ auth_user_id ]
+    const qRes = await pool.query(query, values)
+    return qRes.rows[0].permission_id
+}
+
+const getCountGlobalOwner = async () => {
+    const q1 = "SELECT * FROM users WHERE permission_id = 1;"
+    const res1 = await pool.query(q1)
+    return res1.rowCount
+}
+const isPublicChannel = async (channel_id: number) => {
+    const q1 = "SELECT is_public FROM channels WHERE channel_id = $1;"
+    const v1 = [ channel_id ]
+    const res1 = await pool.query(q1, v1)
+    return res1.rows[0].is_public
 }
 /*
     Input Error:
@@ -274,7 +293,7 @@ export const auth_login = async (req: any, res: any) => {
         const qRes = await pool.query(query, values)
         if (qRes.rows.length === 0) {
             res.status(INVALID_PARAMETER)
-            return res.send(`Error: Incorrect Email or Password`)
+            return res.send(`Incorrect Email or Password`)
         }
         const user = qRes.rows[0]
         const token = generateAccessToken(user)
@@ -311,7 +330,7 @@ export const auth_register = async (req: any, res: any) => {
         password = getHashOf(validPassword(req.body.password))
     } catch (err) {
         res.status(INVALID_PARAMETER)
-        return res.send(`Error: ${err}`)
+        return res.send(`${err}`)
     }
     try {
         const name_first = req.body.name_first
@@ -340,7 +359,7 @@ export const auth_register = async (req: any, res: any) => {
         res.json({ token: token, auth_user_id: auth_user_id})
         return ;
     } catch(err) {
-        console.error(`// Error: function *auth_register* ${err}`);
+        return res.send(`Error ${err}`);
     }
 }
 
@@ -381,7 +400,7 @@ export const channelCreate = async (req: any, res: any) => {
 
     } catch(err) {
         res.status(INVALID_PARAMETER)
-        return res.send(`Error: ${err}`)
+        return res.send(`${err}`)
     }
 }
 
@@ -400,7 +419,7 @@ export const channelsList = async (req: any, res: any) => {
         res.json(qRes.rows)
     } catch(err) {
         res.status(INVALID_TOKEN)
-        return res.send(`Error: ${err}`)
+        return res.send(`${err}`)
     }
 }
 
@@ -418,7 +437,7 @@ export const channelsListAll = async (req: any, res: any) => {
         res.json(qRes.rows)
     } catch(err) {
         res.status(INVALID_TOKEN)
-        return res.send(`Error: ${err}`)
+        return res.send(`${err}`)
     }
 }
 
@@ -445,7 +464,7 @@ export const channelDetails = async (req: any, res: any) => {
         res.json(qRes.rows[0])
     } catch(err) { 
         res.status(INVALID_PARAMETER)
-        return res.send(`Error: ${err}`)
+        return res.send(`${err}`)
     }
 }
 
@@ -468,23 +487,20 @@ export const channelJoin = async (req: any, res: any) => {
         await checkChannelId(res, channel_id)
         const auth_user_id = res.locals.user.auth_user_id
         await testHasChannelUser(res, auth_user_id, channel_id)
-        const q_access_error_1_1 = "SELECT is_public FROM channels WHERE channel_id = $1;"
-        const v_access_error_1_1 = [ channel_id ]
-        const res_access_error_1_1 = await pool.query(q_access_error_1_1, v_access_error_1_1)
-        if (!res_access_error_1_1.rows[0].is_public) {
+
+        const permission_id = await getPermissionId(auth_user_id)
+        const is_public = await isPublicChannel(channel_id)
+        if (!is_public && permission_id === 2 && testNotChannelUser(res, auth_user_id, channel_id)) {
             res.status(ACCESS_ERROR)
             throw new Error(`channel_id refers to a channel that is private`)
         }
-        const q1 = "SELECT permission_id FROM users WHERE auth_user_id = $1;"
-        const v1 = [ auth_user_id ]
-        const qRes1 = await pool.query(q1, v1)
-        let is_owner = qRes1.rows[0].permission_id === 1 ? true : false
+
         const query = "INSERT INTO channel_user (channel_id, auth_user_id, is_owner) VALUES ($1, $2, $3);"
-        const values = [ channel_id, auth_user_id, is_owner]
+        const values = [ channel_id, auth_user_id, false]
         await pool.query(query, values)
         res.json({})
     } catch(err) {
-        return res.send(`Error: ${err}`)
+        return res.send(`${err}`)
     }
 }
 
@@ -523,7 +539,7 @@ export const channelInvite = async (req: any, res: any) => {
         res.json({})
 
     } catch(err) {
-        return res.send(`Error: ${err}`)
+        return res.send(`${err}`)
     }
 }
 
@@ -554,7 +570,7 @@ export const channelLeave = async (req: any, res: any) => {
         await pool.query(query, values)
         return res.json({})
     } catch(err) {
-        return res.send(`Error: ${err}`)
+        return res.send(`${err}`)
     }
 }
 
@@ -603,7 +619,7 @@ export const channelAddowner = async (req: any, res: any) => {
         res.json({})
 
     } catch(err) {
-        return res.send(`Error: ${err}`)
+        return res.send(`${err}`)
     }
 }
 
@@ -657,7 +673,7 @@ export const channelRemoveowner = async (req: any, res: any) => {
         res.json({})
 
     } catch(err) {
-        return res.send(`Error: ${err}`)
+        return res.send(`${err}`)
     }
 }
 
@@ -702,7 +718,7 @@ export const channelMessages = async (req: any, res: any) => {
         res.json({ messages: messages, start: start, end: end})
 
     } catch(err) {
-        return res.send(`Error: ${err}`)
+        return res.send(`${err}`)
     }
 }
 
@@ -743,7 +759,7 @@ export const messageSend = async (req: any, res: any) => {
         const qRes = await pool.query(query, values)
         res.json(qRes.rows[0])
     } catch(err) {
-        return res.send(`Error: ${err}`)
+        return res.send(`${err}`)
     }
 }
 
@@ -784,7 +800,7 @@ export const messageEdit = async (req: any, res: any) => {
         await pool.query(query, values)
         res.json({})
     } catch(err) {
-        return res.send(`Error: ${err}`)
+        return res.send(`${err}`)
     }
 }
 
@@ -813,7 +829,7 @@ export const messageRemove = async (req: any, res: any) => {
         res.json({})
 
     } catch(err) {
-        return res.send(`Error: ${err}`)
+        return res.send(`${err}`)
     }
 }
 
@@ -838,7 +854,7 @@ export const usersAll = async (req: any, res: any) => {
         const users = qRes.rows
         res.json(users)
     } catch (err) {
-        console.error(`// Error: function *usersAll* ${err}`);
+        return res.send(`${err} `)
     }
 }
 
@@ -865,7 +881,7 @@ export const userProfile = async (req: any, res: any) => {
         await checkUserId(res, u_id)
 
     } catch (err) {
-        return res.send(`Error: ${err} `)
+        return res.send(`${err} `)
     }
 }
 
@@ -895,8 +911,7 @@ export const userSetName = async (req: any, res: any) => {
         return res.json({})
 
     } catch (err) {
-        res.status(INVALID_PARAMETER)
-        return res.send(`Error: ${err}`)
+        return res.send(`${err}`)
     }
 }
 /*
@@ -931,8 +946,7 @@ export const userSetEmail = async (req: any, res: any) => {
         return res.json({})
 
     } catch (err) {
-        res.status(INVALID_PARAMETER)
-        return res.send(`Error: ${err}`)
+        return res.send(`${err}`)
     }
 }
 
@@ -969,10 +983,13 @@ export const userSetHandle = async (req: any, res: any) => {
         return res.json({})
 
     } catch (err) {
-        res.status(INVALID_PARAMETER)
-        return res.send(`Error: ${err}`)
+        return res.send(`${err}`)
     }
 }
+
+/******************
+ * Admin Function *
+ ******************/
 
 /*
     Parameters: { token, u_id }
@@ -990,16 +1007,84 @@ export const adminUserRemove = async (req:any, res:any) => {
         const target_u_id = req.query.u_id
         //  u_id does not refer to a valid user
         await checkUserId(res, target_u_id)
-        // u_id refers to a user who is the only global owner
-        const q_input_error_2 = "SELECT * FROM channel_user WHERE is_owner = true;"
-        const res_input_error_2 = await pool.query(q_input_error_2)
-        if (res_input_error_2.rowCount === 1) {
-            throw new Error(`u_id refers to a user who is the only global owner`)
+
+        // the authorised user is not a global owner
+        const permission_id = await getPermissionId(auth_user_id)
+        if (permission_id === 2) {
+            throw new Error(`the authorised user is not a global owner`)
         }
 
+        // u_id refers to a user who is the only global owner
+        const targetPermission = await getPermissionId(target_u_id)
+        const countGlobalOwner = await getCountGlobalOwner()
+        if (targetPermission === 1 && countGlobalOwner === 1) {
+            throw new Error(`u_id refers to a user who is the only global owner`)
+        }
+        
+        const q1 = "UPDATE messages SET auth_user_id = -1 WHERE auth_user_id = $1"
+        const v1 = [ target_u_id ]
+        await pool.query(q1, v1)
+        // Delete user
+        const query = "DELETE FROM users WHERE auth_user_id = $1;"
+        const values = [ target_u_id ]
+        await pool.query(query, values)
+
+        // Once users are removed, the contents of the messages they sent will be replaced by 'Removed user'
+        res.json({})
+
     } catch (err) {
-        res.status(INVALID_PARAMETER)
-        return res.send(`Error: ${err}`)
+        return res.send(`${err}`)
     }
 
+}
+
+/*
+    method: POST
+    Parameters: { token, u_id, permission_id }
+    Return Type: {}
+    path: admin/userpermission/change/
+
+    InputError when any of:
+        u_id does not refer to a valid user
+        u_id refers to a user who is the only global owner and they are being demoted to a user
+        permission_id is invalid
+        the user already has the permissions level of permission_id
+    AccessError when:
+        the authorised user is not a global owner
+*/
+export const adminUserpermissionChange = async (req:any, res:any) => {
+    try {
+        const u_id = req.body.u_id
+        const permission_id = parseInt(req.body.u_id)
+        const auth_permission_id = res.locals.user.permission_id
+        //u_id does not refer to a valid user
+        await checkUserId(res, u_id)
+        //u_id refers to a user who is the only global owner and they are being demoted to a user
+        if (await getPermissionId(u_id) === 1 && await getCountGlobalOwner() === 1){
+            res.status(INVALID_PARAMETER)
+            throw new Error(`u_id refers to a user who is the only global owner and they are being demoted to a user`)
+        }
+        //permission_id is invalid
+        if (!(permission_id === 1 || permission_id === 2) ){
+            res.status(INVALID_PARAMETER)
+            throw new Error(`permission_id is invalid`)
+        }
+        //the user already has the permissions level of permission_id
+        if (await getPermissionId(u_id) === permission_id) {
+            res.status(INVALID_PARAMETER)
+            throw new Error(`the user already has the permissions level of permission_id`)
+        }
+        //the authorised user is not a global owner
+        if (auth_permission_id !== 1){
+            res.status(ACCESS_ERROR)
+            throw new Error(`the authorised user is not a global owner`)
+        }
+        const query = "UPDATE users SET permission_id = $1 WHERE auth_user_id = $2;"
+        const values = [ permission_id, u_id ]
+        await pool.query(query, values)
+        res.json({})
+
+    } catch (err) {
+        return res.send(`${err}`)
+    }
 }

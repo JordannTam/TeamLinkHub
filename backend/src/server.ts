@@ -24,7 +24,8 @@ import {
     messageEdit,
     channelMessages,
     messageRemove,
-    adminUserRemove, 
+    adminUserRemove,
+    adminUserpermissionChange, 
 } 
     from "./service";
 
@@ -64,7 +65,6 @@ app.post(`/auth/logout`, authenticateToken, (req, res) => {
     //
     // TODO
     //
-
 })
 
 app.post(`/channels/create`, authenticateToken, (req, res) => {
@@ -143,6 +143,9 @@ app.delete(`/admin/user/remove`, authenticateToken, (req, res) => {
     adminUserRemove(req, res)
 })
 
+app.post(`/admin/userpermission/change/`, authenticateToken, (req, res) => {
+    adminUserpermissionChange(req, res)
+})
 
 app.listen(port, () => {
     console.log(`Server is up and running on ${port} ...`);

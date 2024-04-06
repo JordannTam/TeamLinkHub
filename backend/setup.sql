@@ -1,0 +1,2 @@
+UPDATE users SET permission_id = 1 WHERE auth_user_id = 1;
+INSERT INTO users (auth_user_id, name_first, name_last, email, password, permission_id) VALUES (-1, 'Removed', 'User', 'void@test.com', 'password', 2);
