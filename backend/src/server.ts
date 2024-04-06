@@ -1,33 +1,39 @@
 import express from "express";
 import cors from "cors"
 import 'dotenv/config'
+import { authenticateToken } from "./util";
 import { 
-    authenticateToken, 
-    generateAccessToken,
     auth_login,
-    usersAll,
-    auth_register,
-    userProfile,
-    userSetName,
-    userSetEmail,
-    userSetHandle,
+    auth_register 
+} from "./auth";
+import { 
+    adminUserRemove,
+    adminUserpermissionChange 
+} from "./admin";
+import { 
     channelCreate,
     channelsList,
     channelsListAll,
     channelDetails,
     channelJoin,
     channelInvite,
+    channelMessages,
     channelLeave,
     channelAddowner,
+    channelRemoveowner 
+} from "./channel";
+import { 
     messageSend,
-    channelRemoveowner,
     messageEdit,
-    channelMessages,
-    messageRemove,
-    adminUserRemove,
-    adminUserpermissionChange, 
-} 
-    from "./service";
+    messageRemove 
+} from "./message";
+import { 
+    usersAll,
+    userProfile,
+    userSetName,
+    userSetEmail,
+    userSetHandle 
+} from "./user";
 
 const app = express()
 const port = 3000
