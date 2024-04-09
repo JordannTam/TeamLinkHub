@@ -8,9 +8,9 @@ export const INVALID_TOKEN = 401
 
 
 export const pool = new Pool({
-    user: 'jordan',
+    user: 'teamlinkhub',
     host: 'localhost',
-    database: 'project_express',
+    database: 'teamlinkhub',
     password: process.env.SQL_PASSWORD,
     port: parseInt(process.env.SQL_PORT)
 })
