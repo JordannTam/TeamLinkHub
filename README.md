@@ -44,5 +44,5 @@ Follow these steps to get your TeamLinkHub running:
 
 
 ## Usage
-* Navigate to http://localhost:3000 after starting the server to access the TeamLinkHub web interface.
-* Use the interface to register as a new user, log in, create or join channels, and start communicating instantly.
+* Navigate to http://localhost:3000 after starting the server to access the TeamLinkHub by calling the API.
+* Use the API to register as a new user, log in, create or join channels, and start communicating instantly.
